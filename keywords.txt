@@ -1,3 +1,8 @@
-Z80RetroShield KEYWORD1
+Z80RetroShield	KEYWORD1
 
-Tick KEYWORD2
+Reset	KEYWORD2
+Tick	KEYWORD2
+set_ram_read	KEYWORD2
+set_ram_write	KEYWORD2
+set_io_read	KEYWORD2
+set_io_write	KEYWORD2
