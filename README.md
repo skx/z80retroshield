@@ -27,7 +27,8 @@ You can view the examples here, and should be able to select them from your Ardu
   * Tests a simple program for reading/writing to RAM.
 * [hello.ino](examples/hello/hello.ino)
   * A simple example which writes output to the serial-console.
-
+* [uc.ino](examples/uc/uc.ino)
+  * Read from serial-console, and output the input in upper-case.
 
 Steve
 --

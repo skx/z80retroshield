@@ -1,0 +1,28 @@
+
+;  Simple program to upper-case a string
+;
+org 0
+   ; show a prompt.
+   ld a, '>'
+   out (1), a
+start:
+   ; read a character
+   in a,(1)
+   ; eof?
+   cp -1
+   jp z, quit
+   ; is it lower-case?  If not just output it
+   cp 'a'
+   jp c,output
+   cp 'z'
+   jp nc, output
+   ; convert from lower-case to upper-case.  yeah.  math.
+   sub a, 32
+output:
+   ; output the character
+   out (1), a
+   ; repeat forever.
+   jr start
+quit:
+   ; terminate
+   halt
