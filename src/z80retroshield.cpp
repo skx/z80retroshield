@@ -92,7 +92,6 @@ unsigned int  uP_ADDR;
 byte uP_DATA;
 
 byte prevIORQ = 0;
-byte prevMREQ = 0;
 byte prevDATA = 0;
 
 /*
@@ -174,63 +173,32 @@ void Z80RetroShield::Tick()
                 m_on_memory_write(uP_ADDR, DATA_IN);
         }
 
+        goto tick_tock;
+
     }
-    else
 
-        //////////////////////////////////////////////////////////////////////
-        // IO Access?
-        if (!STATE_IORQ_N)
+    //////////////////////////////////////////////////////////////////////
+    // IO Access?
+    if (!STATE_IORQ_N)
+    {
+        // IO Read?
+        if (!STATE_RD_N && prevIORQ)
         {
-            // IO Read?
-            if (!STATE_RD_N && prevIORQ)    // perform actual read on falling edge
-            {
-                // change DATA port to output to uP:
-                DATA_DIR = DIR_OUT;
+            // change DATA port to output to uP:
+            DATA_DIR = DIR_OUT;
 
-                if (m_on_io_read != NULL)
-                    DATA_OUT = m_on_io_read(ADDR_L);
-                else
-                    DATA_OUT = 0;
-
-            }
-            else
-
-                // continuing IO Read?
-                if (!STATE_RD_N && !prevIORQ)    // continue output same data
-                {
-                    // change DATA port to output to uP:
-                    DATA_DIR = DIR_OUT;
-
-                    DATA_OUT = prevDATA;
-                }
-                else
-
-                    // IO Write?
-                    if (!STATE_WR_N && prevIORQ)      // perform write on falling edge
-                    {
-                        if (m_on_io_write != NULL)
-                            m_on_io_write(ADDR_L, DATA_IN);
-
-                    }
-                    else
-                        //////////////////////////////////////////////////////////////////////
-                        // if (STATE_RD_N && STATE_WR_N)        // 1 && 1
-                    {
-                        // Interrupt Mode 2 Acknowledge scenario
-                        // IORQ asserted, RD & WR not asserted
-                        // Z80RetroShield expects interrupt vector on databus
-
-                        // change DATA port to output to uP:
-                        DATA_DIR = DIR_OUT;
-
-                        // default to vector 0
-                        DATA_OUT = 0;
-                    }
+            // output data at this cycle too
+            DATA_OUT = m_on_io_read(ADDR_L);
 
         }
-
+        // IO Write?
+        if (!STATE_WR_N && prevIORQ)
+        {
+            m_on_io_write(ADDR_L, DATA_IN);
+        }
+    }
+tick_tock:
     prevIORQ = STATE_IORQ_N;
-    prevMREQ = STATE_MREQ_N;
 
     //////////////////////////////////////////////////////////////////////
     // start next cycle
