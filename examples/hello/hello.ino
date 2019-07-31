@@ -1,25 +1,25 @@
 //
-// This is a very basic program which outputs a greeting, then terminates.
+// This is a very basic program which outputs a greeting to the serial-console.
 //
-// The program is hard-wired:
+// The program is:
 //
 //  org 0
-//	ld a, 'H'
-//	out (1), a
-//	ld a, 'e'
-//	out (1) , a
-//	ld a, 'l'
+//	ld a,'H'
 //	out (1),a
-//	out (1), a
-//	ld a, 'o'
+//	ld a,'e'
+//	out (1),a
+//	ld a,'l'
+//	out (1),a
+//	out (1),a   ; no need to reload the value.
+//	ld a,'o'
 //	out(1),a
-//	ld a, '\n'
+//	ld a,'\n'
 //	out(1),a
 //    loop:
 // 	jp loop
 //
 // We let this program run for a few thousand cycles, which should be
-// sufficient to write the text "Hello" to the serial-console.
+// sufficient to write the text "Hello\n" to the serial-console.
 //
 // Steve
 //
@@ -28,7 +28,7 @@
 #include <z80retroshield.h>
 
 //
-// Our program.
+// Our program, as hex.
 //
 unsigned char rom[32] =
 {
@@ -63,14 +63,7 @@ char ram_read(int address)
 void io_write(int address, char byte)
 {
     if (address == 1)
-    {
         Serial.write(byte);
-    }
-    else
-    {
-        Serial.println("Invalid address ");
-    }
-
 }
 
 
