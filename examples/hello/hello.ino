@@ -30,11 +30,13 @@
 //
 // Our program.
 //
-unsigned char rom[32] = {
-      0x3e, 0x48, 0xd3, 0x01, 0x3e, 0x65, 0xd3, 0x01, 0x3e, 0x6c, 0xd3, 0x01,
-      0xd3, 0x01, 0x3e, 0x6f, 0xd3, 0x01, 0x3e, 0x0a, 0xd3, 0x01, 0xc3, 0x16,
-      0x00 };
-int rom_len = sizeof(rom)/sizeof(rom[0]);
+unsigned char rom[32] =
+{
+    0x3e, 0x48, 0xd3, 0x01, 0x3e, 0x65, 0xd3, 0x01, 0x3e, 0x6c, 0xd3, 0x01,
+    0xd3, 0x01, 0x3e, 0x6f, 0xd3, 0x01, 0x3e, 0x0a, 0xd3, 0x01, 0xc3, 0x16,
+    0x00
+};
+int rom_len = sizeof(rom) / sizeof(rom[0]);
 
 
 //
@@ -46,22 +48,27 @@ Z80RetroShield cpu;
 //
 // RAM I/O function handler.
 //
-char ram_read(int address){
-    if ( address >= rom_len )
+char ram_read(int address)
+{
+    if (address >= rom_len)
         address = 0;
 
-    return( rom[address]) ;
+    return (rom[address]) ;
 }
 
 
 //
 // I/O function handler.
 //
-void io_write(int address, char byte) {
-    if ( address == 1 ) {
+void io_write(int address, char byte)
+{
+    if (address == 1)
+    {
         Serial.write(byte);
-    } else {
-        Serial.println( "Invalid address " );
+    }
+    else
+    {
+        Serial.println("Invalid address ");
     }
 
 }
@@ -84,13 +91,13 @@ void setup()
     // Then we setup a callback to be executed every time an "out (x),y"
     // instruction is encountered.
     //
-    cpu.set_ram_read( ram_read );
-    cpu.set_io_write( io_write );
+    cpu.set_ram_read(ram_read);
+    cpu.set_io_write(io_write);
 
     //
     // Configured.
     //
-    Serial.println( "Z80 configured; launching program." );
+    Serial.println("Z80 configured; launching program.");
 }
 
 
@@ -114,16 +121,17 @@ void loop()
     //
     // Are we done?  If so return.
     //
-    if ( done )
+    if (done)
         return;
 
     //
     // We stop running after running a specific number of cycles
     //
-    if ( cycles > 4096 ) {
-        Serial.print( "Z80 processor stopped " );
-        Serial.print( cycles );
-        Serial.println( " cycles executed.");
+    if (cycles > 4096)
+    {
+        Serial.print("Z80 processor stopped ");
+        Serial.print(cycles);
+        Serial.println(" cycles executed.");
         done = true;
         return;
     }

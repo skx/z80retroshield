@@ -29,7 +29,7 @@
 // our program.
 //
 unsigned char rom[16] = {  0x21, 0x09, 0x00, 0xaf, 0x3c, 0x77, 0xc3, 0x04, 0x00, 0x00 };
-int rom_len = sizeof(rom)/sizeof(rom[0]);
+int rom_len = sizeof(rom) / sizeof(rom[0]);
 
 
 
@@ -41,21 +41,23 @@ Z80RetroShield cpu;
 //
 // RAM I/O function handler.
 //
-char ram_read(int address){
-    if ( address >= rom_len )
+char ram_read(int address)
+{
+    if (address >= rom_len)
         address = 0;
 
-    return( rom[address]) ;
+    return (rom[address]) ;
 }
 
 //
 // RAM I/O function handler.
 //
-void ram_write(int address, char byte) {
-    if ( address >= rom_len )
+void ram_write(int address, char byte)
+{
+    if (address >= rom_len)
         address = 0;
 
-    rom[address]=byte;
+    rom[address] = byte;
 }
 
 
@@ -73,13 +75,13 @@ void setup()
     // We also setup a callback for RAM-write, so the updated value
     // can be stored in RAM.
     //
-    cpu.set_ram_read( ram_read );
-    cpu.set_ram_write( ram_write );
+    cpu.set_ram_read(ram_read);
+    cpu.set_ram_write(ram_write);
 
     //
     // Configured.
     //
-    Serial.println( "Z80 configured; launching program." );
+    Serial.println("Z80 configured; launching program.");
 }
 
 
@@ -103,16 +105,17 @@ void loop()
     //
     // Are we done?  If so return.
     //
-    if ( done )
+    if (done)
         return;
 
     //
     // We stop running after running a specific number of cycles
     //
-    if ( cycles > 4096 ) {
-        Serial.print( "Z80 processor stopped " );
-        Serial.print( cycles );
-        Serial.println( " cycles executed.");
+    if (cycles > 4096)
+    {
+        Serial.print("Z80 processor stopped ");
+        Serial.print(cycles);
+        Serial.println(" cycles executed.");
         done = true;
         return;
     }
@@ -125,24 +128,26 @@ void loop()
     //
     // Dump the RAM every few cycles.
     //
-    if ( ( cycles % 16 ) == 0 ) {
+    if ((cycles % 16) == 0)
+    {
 
         // Temporary buffer for a line of output.
         char tmp[64] = { '\0' };
 
         // Update the buffer with our RAM.
-        for( int i = 0 ; i < 10; i++ ) {
+        for (int i = 0 ; i < 10; i++)
+        {
             char x[5] = { '\0' };
             sprintf(x, "%02X ", rom[i]);
-            strcat( tmp, x );
+            strcat(tmp, x);
         }
 
         // Show to the serial console.
-        Serial.print( "RAM [" );
-        Serial.print( tmp );
-        Serial.print( "] " );
-        Serial.print( " counter: " );
-        Serial.println( rom[9], HEX );
+        Serial.print("RAM [");
+        Serial.print(tmp);
+        Serial.print("] ");
+        Serial.print(" counter: ");
+        Serial.println(rom[9], HEX);
     }
 
     // We've run a tick.

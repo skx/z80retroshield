@@ -209,7 +209,7 @@ void Z80RetroShield::Tick()
                     if (!STATE_WR_N && prevIORQ)      // perform write on falling edge
                     {
                         if (m_on_io_write != NULL)
-                            m_on_io_write(ADDR_L,DATA_IN);
+                            m_on_io_write(ADDR_L, DATA_IN);
 
                     }
                     else
@@ -255,7 +255,7 @@ void Z80RetroShield::Reset()
     digitalWrite(uP_INT_N, HIGH);
     digitalWrite(uP_NMI_N, HIGH);
 
-    for( int i = 0; i < 4; i++ )
+    for (int i = 0; i < 4; i++)
         Tick();
 
     // Drive RESET conditions
