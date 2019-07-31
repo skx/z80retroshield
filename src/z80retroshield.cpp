@@ -191,12 +191,14 @@ void Z80RetroShield::Tick()
             DATA_OUT = m_on_io_read(ADDR_L);
 
         }
+
         // IO Write?
         if (!STATE_WR_N && prevIORQ)
         {
             m_on_io_write(ADDR_L, DATA_IN);
         }
     }
+
 tick_tock:
     prevIORQ = STATE_IORQ_N;
 
