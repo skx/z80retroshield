@@ -1,6 +1,6 @@
 //
-// This is a very basic program which uses our library to execute a
-// very simple program.
+// This is an example which uses our library to execute a very simple program
+// which reads and writes to RAM.
 //
 // The program is hard-wired and just increments a single byte of RAM:
 //
@@ -28,7 +28,7 @@
 //
 // our program.
 //
-unsigned char rom[16] = {  0x21, 0x09, 0x00, 0xaf, 0x3c, 0x77, 0xc3, 0x04, 0x00, 0x00 };
+unsigned char rom[10] = {  0x21, 0x09, 0x00, 0xaf, 0x3c, 0x77, 0xc3, 0x04, 0x00};
 int rom_len = sizeof(rom) / sizeof(rom[0]);
 
 
@@ -43,9 +43,6 @@ Z80RetroShield cpu;
 //
 char ram_read(int address)
 {
-    if (address >= rom_len)
-        address = 0;
-
     return (rom[address]) ;
 }
 
@@ -54,9 +51,6 @@ char ram_read(int address)
 //
 void ram_write(int address, char byte)
 {
-    if (address >= rom_len)
-        address = 0;
-
     rom[address] = byte;
 }
 
@@ -143,10 +137,10 @@ void loop()
         }
 
         // Show to the serial console.
-        Serial.print("RAM [");
+        Serial.print("RAM [ ");
         Serial.print(tmp);
         Serial.print("] ");
-        Serial.print(" counter: ");
+        Serial.print(" counter value: ");
         Serial.println(rom[9], HEX);
     }
 
