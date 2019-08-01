@@ -1,25 +1,8 @@
 //
-// This is a very basic program which outputs a greeting to the serial-console.
-//
-// The program is:
-//
-//  org 0
-//	ld a,'H'
-//	out (1),a
-//	ld a,'e'
-//	out (1),a
-//	ld a,'l'
-//	out (1),a
-//	out (1),a   ; no need to reload the value.
-//	ld a,'o'
-//	out(1),a
-//	ld a,'\n'
-//	out(1),a
-//    loop:
-// 	jp loop
+// This sketch uses code on the Z80 to write a greeting to the serial-console.
 //
 // We let this program run for a few thousand cycles, which should be
-// sufficient to write the text "Hello\n" to the serial-console.
+// sufficient to allow the text-output, "Hello\n", to complete.
 //
 // Steve
 //
@@ -30,13 +13,15 @@
 //
 // Our program, as hex.
 //
-unsigned char rom[32] =
+// The source code is located in `hello.z80`.
+//
+unsigned char memory[32] =
 {
     0x3e, 0x48, 0xd3, 0x01, 0x3e, 0x65, 0xd3, 0x01, 0x3e, 0x6c, 0xd3, 0x01,
     0xd3, 0x01, 0x3e, 0x6f, 0xd3, 0x01, 0x3e, 0x0a, 0xd3, 0x01, 0xc3, 0x16,
     0x00
 };
-int rom_len = sizeof(rom) / sizeof(rom[0]);
+int memory_len = sizeof(memory) / sizeof(memory[0]);
 
 
 //
@@ -48,12 +33,9 @@ Z80RetroShield cpu;
 //
 // RAM I/O function handler.
 //
-char ram_read(int address)
+char memory_read(int address)
 {
-    if (address >= rom_len)
-        address = 0;
-
-    return (rom[address]) ;
+    return (memory[address]);
 }
 
 
@@ -78,13 +60,15 @@ void setup()
     //
     // Setup callbacks.
     //
-    // We have to setup a RAM-read callback, otherwise the program
-    // won't be fetched from RAM and executed.
+    // We must setup a memory-read callback, otherwise the program
+    // won't be fetched and executed.
+    //
+    cpu.set_memory_read(memory_read);
+
     //
     // Then we setup a callback to be executed every time an "out (x),y"
     // instruction is encountered.
     //
-    cpu.set_ram_read(ram_read);
     cpu.set_io_write(io_write);
 
     //
@@ -134,6 +118,8 @@ void loop()
     //
     cpu.Tick();
 
+    //
     // We've run a tick.
+    //
     cycles++;
 }
