@@ -4,7 +4,7 @@ The [RetroShield](http://www.8bitforce.com/projects/retroshield/) comes in a Z80
 
 However the sample code mixes the actual Z80-usage with some unrelated things, such as button-scanning, LCD display, and SPI-RAM access which makes it harder to use as a standalone "thing".
 
-This repository aims to make the retro-shield easier to deal with, by abstracting the CPU-driving into a single standalone class, and packaging it as a library for the Arduino IDE.  This should allow you to use it in your arduino-sketch along with whatever else you wish to do.
+This repository aims to make the retroshield easier to deal with, by abstracting the CPU-driving into a single standalone class, and packaging it as a library for the Arduino IDE.  This should allow you to use it in your arduino-sketch along with whatever else you wish to do.
 
 The official example code for the Z80 retroshield contains two examples, one useing the `loop()`-based approach this repository contains, the other uses a timer-function to drive the processor.  Using a timer is cleaner since it gives you more speed and predictability, however the execution becomes more complex because you can't do things like invoke `Serial.read()`/`Serial.write()` inside an interrupt-handler - though you can disable the time for the duration of your "stuff".
 
@@ -17,8 +17,7 @@ The examples included within this library should be sufficient to demonstrate ho
 
 * Instantiate an instance of the Z80RetroShield object.
 * Configure a small number of callbacks
-  * Which are fired to read/write RAM
-  * And to read/write output
+  * Which are fired to read/write RAM and handle I/O.
 * Call `Tick()` to allow the Z80 processor to execute.
 
 You can view the examples here, and should be able to select them from your Arduino-IDE:
