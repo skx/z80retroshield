@@ -28,33 +28,9 @@
 #include <Arduino.h>
 #include <z80retroshield.h>
 
-
-#define byte char
-
-//
-// This stuff should go away ..
-//
-
-#define ADDR_8251_DATA          0x00
-#define ADDR_8251_MODCMD        0x01
-
-#define STATE_8251_RESET        0x01
-#define STATE_8251_INITIALIZED  0x00
-#define CMD_8251_INTERNAL_RESET 0x40
-#define CMD_8251_RTS            0x20
-#define CMD_8251_DTR            0x02
-#define STAT_8251_TxRDY         0x01
-#define STAT_8251_RxRDY         0x02
-#define STAT_8251_TxE           0x04
-#define STAT_DSR                0x80
-
-byte reg8251_STATE;      // register to keep track of 8251 state: reset or initialized
-byte reg8251_MODE;
-byte reg8251_COMMAND;
-byte reg8251_STATUS;
-byte reg8251_DATA;
-
-
+#ifndef byte
+# define byte char
+#endif
 
 /* Digital Pin Assignments */
 #define DATA_OUT (PORTL)
@@ -72,6 +48,7 @@ byte reg8251_DATA;
 #define uP_INT_N    50
 #define uP_CLK      52
 
+//
 // Fast routines to drive clock signals high/low; faster than digitalWrite
 // required to meet >100kHz clock
 //
@@ -88,18 +65,14 @@ byte reg8251_DATA;
 #define ADDR_H_DIR DDRC
 #define ADDR_L_DIR DDRA
 
-unsigned int  uP_ADDR;
-byte uP_DATA;
-
+unsigned int  uP_ADDR = 0;
 byte prevIORQ = 0;
-byte prevDATA = 0;
 
 /*
  * Constructor
  */
 Z80RetroShield::Z80RetroShield()
 {
-
     //
     // Callbacks are all empty by default.
     //
@@ -108,11 +81,16 @@ Z80RetroShield::Z80RetroShield()
     m_on_io_read = NULL;
     m_on_io_write = NULL;
 
+    //
     // Set directions
+    //
     DATA_DIR = DIR_IN;
     ADDR_H_DIR = DIR_IN;
     ADDR_L_DIR = DIR_IN;
 
+    //
+    // Handle other pins.
+    //
     pinMode(uP_RESET_N, OUTPUT);
     pinMode(uP_WR_N, INPUT);
     pinMode(uP_RD_N, INPUT);
@@ -124,7 +102,6 @@ Z80RetroShield::Z80RetroShield()
 
     Reset();
     digitalWrite(uP_CLK, LOW);
-
 }
 
 /*
@@ -141,31 +118,23 @@ Z80RetroShield::~Z80RetroShield()
  */
 void Z80RetroShield::Tick()
 {
-    CLK_HIGH;    // CLK goes high
-
+    // CLK goes high
+    CLK_HIGH;
 
     uP_ADDR = ADDR;
-
-    // unlike memory mapped devices in 6502 & 6809,
-    // Z80RetroShield bus has two modes: Memory (MREQ_N) and IO (IORQ_N)
 
     //////////////////////////////////////////////////////////////////////
     // Memory Access?
     if (!STATE_MREQ_N)
     {
-
         // Memory Read?
         if (!STATE_RD_N)
         {
             // change DATA port to output to uP:
             DATA_DIR = DIR_OUT;
 
-            if (m_on_memory_read == NULL)
-                DATA_OUT = 0x00;  // nop
-            else
-            {
+            if (m_on_memory_read)
                 DATA_OUT = m_on_memory_read(uP_ADDR);
-            }
         }
         else if (!STATE_WR_N)
         {
@@ -174,7 +143,6 @@ void Z80RetroShield::Tick()
         }
 
         goto tick_tock;
-
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -204,7 +172,7 @@ tick_tock:
 
     //////////////////////////////////////////////////////////////////////
     // start next cycle
-    CLK_LOW;    // E goes low
+    CLK_LOW;
 
     // natural delay for DATA Hold time (t_HR)
     DATA_DIR = DIR_IN;
@@ -219,16 +187,15 @@ tick_tock:
  */
 void Z80RetroShield::Reset()
 {
-
     // Drive RESET conditions
     digitalWrite(uP_RESET_N, LOW);
     digitalWrite(uP_INT_N, HIGH);
     digitalWrite(uP_NMI_N, HIGH);
 
+    // Run for a few cycles.
     for (int i = 0; i < 4; i++)
         Tick();
 
     // Drive RESET conditions
     digitalWrite(uP_RESET_N, HIGH);
-
 }
