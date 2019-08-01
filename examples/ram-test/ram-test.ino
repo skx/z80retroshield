@@ -2,22 +2,9 @@
 // This is an example which uses our library to execute a very simple program
 // which reads and writes to RAM.
 //
-// The program is hard-wired and just increments a single byte of RAM:
-//
-//     ld hl, output
-//     xor a,a
-//  loop:
-//     inc a
-//     ld (hl), a
-//     jp loop
-//  output:
-//     db 00
-//
-// The program compiles to a few bytes, so we only pretend we have
-// 16-bytes of RAM/ROM - and output the contents every ten cycles.
-//
-// After a few iterations, sufficient to prove it works, we stop the
-// processor.
+// We let this program run for a few thousand cycles, dump the contents
+// of the memory every few cycles.  The result should be that the value
+// of our counter increments.
 //
 // Steve
 //
@@ -26,10 +13,15 @@
 #include <z80retroshield.h>
 
 //
-// our program.
+// Our program.
 //
-unsigned char rom[10] = {  0x21, 0x09, 0x00, 0xaf, 0x3c, 0x77, 0xc3, 0x04, 0x00};
-int rom_len = sizeof(rom) / sizeof(rom[0]);
+// The source code is located in `ram-test.z80`.
+//
+unsigned char memory[9] =
+{
+    0x21, 0x08, 0x00, 0x7e, 0x3c, 0x77, 0x18, 0xfb, 0x00
+};
+int memory_len = sizeof(memory) / sizeof(memory[0]);
 
 
 
@@ -41,17 +33,17 @@ Z80RetroShield cpu;
 //
 // RAM I/O function handler.
 //
-char ram_read(int address)
+char memory_read(int address)
 {
-    return (rom[address]) ;
+    return (memory[address]) ;
 }
 
 //
 // RAM I/O function handler.
 //
-void ram_write(int address, char byte)
+void memory_write(int address, char byte)
 {
-    rom[address] = byte;
+    memory[address] = byte;
 }
 
 
@@ -63,14 +55,14 @@ void setup()
     Serial.begin(115200);
 
     //
-    // We have to setup a RAM-read callback, otherwise the program
-    // won't be fetched from RAM and executed.
+    // We must setup a memory-read callback, otherwise the program
+    // won't be fetched and executed.
     //
-    // We also setup a callback for RAM-write, so the updated value
-    // can be stored in RAM.
+    // We also setup a callback for memory-write, so the updated value
+    // of our counter may be persisted.
     //
-    cpu.set_ram_read(ram_read);
-    cpu.set_ram_write(ram_write);
+    cpu.set_memory_read(memory_read);
+    cpu.set_memory_write(memory_write);
 
     //
     // Configured.
@@ -120,7 +112,7 @@ void loop()
     cpu.Tick();
 
     //
-    // Dump the RAM every few cycles.
+    // Dump the contents of our memory every few cycles.
     //
     if ((cycles % 16) == 0)
     {
@@ -129,21 +121,23 @@ void loop()
         char tmp[64] = { '\0' };
 
         // Update the buffer with our RAM.
-        for (int i = 0 ; i < 10; i++)
+        for (int i = 0 ; i < memory_len; i++)
         {
             char x[5] = { '\0' };
-            sprintf(x, "%02X ", rom[i]);
+            sprintf(x, "%02X ", memory[i]);
             strcat(tmp, x);
         }
 
-        // Show to the serial console.
+        // Output the dump to the serial console.
         Serial.print("RAM [ ");
         Serial.print(tmp);
         Serial.print("] ");
         Serial.print(" counter value: ");
-        Serial.println(rom[9], HEX);
+        Serial.println(memory[8], HEX);
     }
 
+    //
     // We've run a tick.
+    //
     cycles++;
 }
