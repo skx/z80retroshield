@@ -65,8 +65,6 @@
 #define ADDR_H_DIR DDRC
 #define ADDR_L_DIR DDRA
 
-unsigned int  uP_ADDR = 0;
-byte prevIORQ = 0;
 
 /*
  * Constructor
@@ -118,16 +116,27 @@ Z80RetroShield::~Z80RetroShield()
  */
 void Z80RetroShield::Tick()
 {
+    /*
+     * The memory address we're reading/writing to.
+     */
+    static unsigned int  uP_ADDR = 0;
+
+    /*
+     * The I/O address we're reading/writing to.
+     */
+    static byte prevIORQ = 0;
+
     // CLK goes high
     CLK_HIGH;
 
+    // Store the contents of the address-bus in case we're going to use it.
     uP_ADDR = ADDR;
 
     //////////////////////////////////////////////////////////////////////
     // Memory Access?
     if (!STATE_MREQ_N)
     {
-        // Memory Read?
+        // RAM Read?
         if (!STATE_RD_N)
         {
             // change DATA port to output to uP:
@@ -135,9 +144,12 @@ void Z80RetroShield::Tick()
 
             if (m_on_memory_read)
                 DATA_OUT = m_on_memory_read(uP_ADDR);
+            else
+                DATA_OUT = 0;
         }
         else if (!STATE_WR_N)
         {
+            // RAM write
             if (m_on_memory_write != NULL)
                 m_on_memory_write(uP_ADDR, DATA_IN);
         }
@@ -156,14 +168,17 @@ void Z80RetroShield::Tick()
             DATA_DIR = DIR_OUT;
 
             // output data at this cycle too
-            DATA_OUT = m_on_io_read(ADDR_L);
-
+            if (m_on_io_read)
+                DATA_OUT = m_on_io_read(ADDR_L);
+            else
+                DATA_OUT = 0;
         }
 
         // IO Write?
         if (!STATE_WR_N && prevIORQ)
         {
-            m_on_io_write(ADDR_L, DATA_IN);
+            if (m_on_io_write != NULL)
+                m_on_io_write(ADDR_L, DATA_IN);
         }
     }
 
