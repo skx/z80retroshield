@@ -1,0 +1,29 @@
+;;
+;; This program operates in an endless loop, and increments the
+;; value stored at a particular address.
+;;
+;; Since there is no output it is a tricky-program to test, but
+;; if you're single-stepping through code, and can dump RAM then
+;; it is a nice standalone example program.
+;;
+
+org 0
+
+   ;; Set HL to the address which we're going to modify.
+   ld hl, output
+
+loop:
+   ;; Fetch the current value from the address.
+   ld a, (hl)
+
+   ;; Increment.
+   inc a
+
+   ;; Store the updated value back in the address.
+   ld (hl), a
+
+   ;; Repeat.  Forever.
+   jr loop
+
+output:
+   db 00

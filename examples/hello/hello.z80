@@ -1,0 +1,31 @@
+;
+; Simple program to output a greeting, via `out (1), a`.
+;
+; I've configured my Z80-emulator to treat that as a write to STDOUT
+;
+;   https://github.com/skx/z80emulater/
+;
+; Similarly in the `hello.ino` driver writes to port (1) are converted
+; to serial-console output.
+;
+
+org 0
+	ld a,'H'
+	out (1),a
+
+        ld a,'e'
+	out (1),a
+
+        ld a,'l'
+	out (1),a
+	out (1),a   ; no need to reload the value!
+
+        ld a,'o'
+	out(1),a
+
+        ld a,'\n'
+	out(1),a
+
+ ; Endless loop.
+ loop:
+ 	jp loop
