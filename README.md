@@ -34,9 +34,17 @@ You can view the examples by exploring the repository, and the examples should b
   * Read from serial-console, and output the input in upper-case.
 
 
-## Z80 Example Code
+## Links
 
-I put together a small repository for [example Z80 assembly language programs](https://github.com/skx/z80-examples) which might be a useful resource to go alongside this repository - as it contains the source-code for the embedded code.
+Now some Z80 links
+
+* Sample Z80 code which contains similar code to the examples here:
+  * [https://github.com/skx/z80-examples](https://github.com/skx/z80-examples)
+* A Z80 emulator which will let you run the examples:
+  * [https://github.com/skx/z80emulater/](https://github.com/skx/z80emulater/).
+  * This emulator has been updated so that `in (1)` and `out (1)` handle STDIN/STDOUT as the examples do.
+* My blog posts on the topic of creating a Z80-based computer:
+  * [https://blog.steve.fi/tags/z80/](https://blog.steve.fi/tags/z80/)
 
 
 Steve
