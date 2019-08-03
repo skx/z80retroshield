@@ -12,6 +12,15 @@ The retroshield project contains some [sample code](https://gitlab.com/8bitforce
 This repository aims to make the Z80 retroshield easier to deal with, by abstracting the CPU-driving into a single standalone class, and packaging it as a library for the Arduino IDE.  This should allow you to use it in your arduino-sketch along with whatever else you wish to do.
 
 
+## Installation
+
+If you wish to install the library manually you can clone [this repository](https://github.com/skx/z80retroshield) beneath your arduino `libraries` folder, or [download a release](https://github.com/skx/z80retroshield/releases) there.
+
+The simpler way to install is via the Arduino library manager, enter "z80" into the search box and you'll find the library.  Click "install" to install, then restart your IDE and open the examples:
+
+![Screenshot](_media/library-manager.png)
+
+
 ## Usage
 
 The examples included within this library should be sufficient to demonstrate how to use the class, but in brief you:
