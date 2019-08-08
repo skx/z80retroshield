@@ -39,6 +39,9 @@ You can view the examples by exploring the repository, and the examples should b
   * Tests a simple program for reading/writing to RAM.
 * [hello.ino](examples/hello/hello.ino)
   * A simple example which writes a message to the serial-console.
+* [speed_test.ino](examples/speed_test.ino)
+  * Shows how many ticks/cycles we execute a second.
+  * This shows the overhead of using the driver.
 * [uc.ino](examples/uc/uc.ino)
   * Read from serial-console, and output the input in upper-case.
 
