@@ -35,6 +35,8 @@ The examples included within this library should be sufficient to demonstrate ho
 
 You can view the examples by exploring the repository, and the examples should be visible via the Arduino-IDE interface:
 
+* [basic](examples/basic/]
+  * A BASIC interpreter, written in Z80 assembly!
 * [ram-test.ino](examples/ram-test/ram-test.ino)
   * Tests a simple program for reading/writing to RAM.
 * [hello.ino](examples/hello/hello.ino)
