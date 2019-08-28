@@ -10,8 +10,6 @@
 //
 // Defined in z80retroshield.cpp - so it isn't exported.
 //
-// TODO: Fix this.
-//
 #define uP_INT_N    50
 
 
@@ -595,14 +593,8 @@ char io_read(int address)
 }
 
 //
-// I/O function handler.
+// I/O function handler: Port writing.
 //
-// I'm porting the (unchanged) BASIC here.
-//
-// So addresses are:
-//
-//   0  -> STDOUT / Serial.write
-//   1  -> Meta / serial-console setup.
 //
 void io_write(int address, char byte)
 {
@@ -653,7 +645,7 @@ void setup()
     // We're now configured, show a pre-boot
     // message.
     //
-    Serial.println("Launching BASIC.");
+    Serial.println("Launching BASIC:");
 }
 
 
@@ -666,11 +658,11 @@ void loop()
     // Do we have any pending serial-input?  If so
     // trigger an interrupt to the processor.
     //
-    // (Active is "low").
+    // (Active is "low".)
     //
-    if (Serial.available()) {
+    if (Serial.available())
         digitalWrite(uP_INT_N, LOW);
-    }
+
 
     //
     // Tickle the CPU.

@@ -15,8 +15,8 @@ simulate RAM.
 
 The memory map looks like this:
 
-* 0x0000 - 0x1
-* 0x2000 - 0x37FF - RAM buffer
+* 0x0000 - 0x1DB2 - ROM (Containing "intmini" + "basic")
+* 0x2000 - 0x37FF - RAM (BASIC code, variables, & etc)
 
 
 ## I/O Ports
@@ -33,17 +33,15 @@ I simplified this by removing the use of port 1, in `intmini.asm`
 where the bootup/configuration magic occurs.
 
 Note that this project is unusual in that it uses an interrupt (mode 1)
-which is used to notify the code of pending serial-console input.
-
-The Z80 has several interrupt modes, here mode 1 is configured via the
-following code:
+which is used to notify the code of pending serial-console input. The Z80
+has several interrupt modes, here mode 1 is configured via the following code:
 
                IM        1
                EI
 
-This means that when _any_ an interrupt is triggered the processor will
-jump to the hardwired address 0x38h.  From there a character will be
-read from the serial console, and added to the serial-console buffer.
+With interrupt mode one whenever an interrupt is triggered the processor will
+jump to the hardwired address 0x38h.  In our case the code at 0x38h will read
+a character from the serial console, and add it to the serial-console buffer.
 
 The `basic.ino` sketch triggers the interrupt by activating the interrupt
 pin (setting it low), if there is any pending serial-input.  This flag
