@@ -37,9 +37,9 @@ CS              EQU     0CH             ; Clear screen
 ; Reset
 
 RST00           DI                       ;Disable interrupts
-                JP       INIT            ;Initialize Hardware and go
+               JP       INIT            ;Initialize Hardware and go
 
-                db  (0008h-$) dup (0)
+               db  (0008h-$) dup (0) ; Padding so RST8 starts at org 0x0008H
 
 ;------------------------------------------------------------------------------
 ; TX a character over RS232
@@ -47,15 +47,15 @@ RST00           DI                       ;Disable interrupts
                 ORG     0008H
 RST08           JP      TXA
 
-                db  (0010h-$) dup (0)
+                db  (0010h-$) dup (0) ; Padding so RST10 starts at org 0x0010H
 
 ;------------------------------------------------------------------------------
 ; RX a character over RS232 Channel A [Console], hold here until char ready.
 
-                ORG 0010H
+               ORG 0010H
 RST10           JP      RXA
 
-                db (0018h - $) dup (0)
+               db (0018h - $) dup (0)
 
 ;------------------------------------------------------------------------------
 ; Check serial status
@@ -154,17 +154,8 @@ INIT:
                XOR       A               ;0 to accumulator
                LD        (serBufUsed),A
 
-		LD A,4Dh            ; ERTURK changed from 4E to 4D
-	NOP
-        NOP
-                NOP
-                NOP
-		LD A,37h
-	NOP
-        NOP
-
-               IM        1
-               EI
+               IM        1               ; Interrupt-mode 1
+               EI                        ; Enable interrupts
                LD        HL,SIGNON1      ; Sign-on message
                CALL      PRINT           ; Output string
                LD        A,(basicStarted); Check the BASIC STARTED flag
@@ -198,7 +189,7 @@ CHECKWARM:
 SIGNON1:       DB     CS
                DB     "Z80 SBC By Grant Searle",CR,LF,0
 SIGNON2:       DB     CR,LF
-               DB     "Cold or warm start (C or W)? ",0
+               DB     "(C)old or (W)arm start?",0
 
                 DB (00150H - $) dup (0)
 
