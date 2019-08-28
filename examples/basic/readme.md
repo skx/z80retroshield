@@ -62,30 +62,32 @@ You can enter code:
 
 You can also see free RAM:
 
-     PRINT SPC(0)
+     PRINT FRE(0)
 
-Empty memory via `NEW`, and reboot via `RESET`
+Other commands will work as you should expect; empty memory via `NEW`, and reboot via `RESET`.  You can also perform port I/O via:
+
+     NEW
+     10 OUT 0,72 : OUT 0,101 : OUT 0, 108 : OUT 0,108
+     20 OUT 0,111 : OUT 0,10: OUT 0,13
+     RUN
 
 
 ## Compiling The Assembly
 
-(Re)compiling the Z80 assembly is a bit of a hassle, but not impossible.
-
-The first step is downloading the Macroassembler AS, which is used to compile
-the code.  You can find that here:
+(Re)compiling the Z80 assembly is a bit of a hassle, but not impossible.  The first step is downloading the Macroassembler (AS), which is used to compile the code.  You can find that here:
 
 * http://john.ccac.rwth-aachen.de:8000/as/download.html
 
-Once you have it you'll be able to install it.  Assuming a Linux system:
+Assuming you're running upon a GNU/Linux system you should be able to compile like so:
 
     cp Makefile.def-samples/Makefile.def-k8-unknown-linux Makefile.def
     make
 
-Once the binaries `asl` and `p2hex` are available and upon your PATH you can compile the `.asm` files by running `make`.  The two files are:
+Once the binaries `asl` and `p2hex` are available and upon your PATH you can compile the assembly files which make up the interpretter by running `make` in this directory.  The source is split into two files:
 
-* `intmini.asm`
+* [intmini.asm](intmini.asm)
   * Initialization-code, interrupt-handler, etc.
-* `basic.asm`
+* [basic.asm](basic.asm)
   * The interpreter.
 
 You will receive two output files with a `.hex` suffix.  Copy and paste the
