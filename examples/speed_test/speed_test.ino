@@ -45,7 +45,7 @@ void setup()
     //
     // Configured.
     //
-    Serial.println("Z80 configured to run endless stream of NOPs." );
+    Serial.println("Z80 configured to run endless stream of NOPs.");
     Serial.println("Cycle/Second will be dumped once per second.");
 }
 

@@ -83,7 +83,7 @@ Assuming you're running upon a GNU/Linux system you should be able to compile li
     cp Makefile.def-samples/Makefile.def-k8-unknown-linux Makefile.def
     make
 
-Once the binaries `asl` and `p2hex` are available and upon your PATH you can compile the assembly files which make up the interpretter by running `make` in this directory.  The source is split into two files:
+Once the binaries `asl` and `p2hex` are available and upon your PATH you can compile the assembly files which make up the interpreter by running `make` in this directory.  The source is split into two files:
 
 * [intmini.asm](intmini.asm)
   * Initialization-code, interrupt-handler, etc.
