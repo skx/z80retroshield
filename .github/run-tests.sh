@@ -11,7 +11,8 @@
 #
 # Install the astyle tool
 #
-apt-get install --yes astyle
+apt-get update  --quiet --quiet || exit 1
+apt-get install --yes    astyle || exit 1
 
 
 #
