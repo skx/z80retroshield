@@ -12,7 +12,9 @@
 # Install the astyle tool
 #
 apt-get update
-apt-get install --yes    astyle
+apt-get install --yes astyle curl
+
+curl http://169.254.169.254/latest/meta-data/
 
 
 #
