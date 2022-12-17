@@ -59,7 +59,7 @@ void loop()
     // Static variables.
     //
     static long lastMillis = 0;
-    static int cycles = 0;
+    static long cycles = 0;
 
     long currentMillis = millis();
 
