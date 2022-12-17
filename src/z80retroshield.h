@@ -102,9 +102,9 @@ public:
     void Reset();
 
     /**
-     * Run a single cycle.
+     * Run specified cycles.
      */
-    void Tick();
+    void Tick(int cycles = 1);
 
     /**
      * Set the callback to be invoked when memory is to be read.

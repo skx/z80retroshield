@@ -67,14 +67,14 @@ void loop()
     //
     // Step the CPU, and count it.
     //
-    cpu.Tick();
-    cycles++;
+    cpu.Tick(100);
+    cycles += 100;
 
 
     if (currentMillis - lastMillis > 1000)
     {
         Serial.print("Cycles per second second:");
-        Serial.println(cycles);
+        Serial.println(cycles*1000/(currentMillis - lastMillis));
 
         lastMillis = currentMillis;
         cycles = 0;
