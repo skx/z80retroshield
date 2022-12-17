@@ -75,6 +75,9 @@ Z80RetroShield::Z80RetroShield()
     m_on_memory_write = NULL;
     m_on_io_read = NULL;
     m_on_io_write = NULL;
+    m_debug_output = NULL;
+    m_debug = false;
+    m_cycle = 0;
 
     //
     // Set directions
@@ -104,6 +107,45 @@ Z80RetroShield::Z80RetroShield()
  */
 Z80RetroShield::~Z80RetroShield()
 {
+}
+
+void Z80RetroShield::show_status(const char* header) {
+    if (m_debug_output) {
+        char buf[100];
+        sprintf(buf, "%s%4ld addr=%04x data=%04x ~MREQ=%s ~IOREQ=%s  RW=%s",
+                header,
+                m_cycle,
+                ADDR(),
+                DATA_IN(),
+                STATE_MREQ_N() ? "H" : "L",
+                STATE_IORQ_N() ? "H" : "L",
+                STATE_RD_N() ? "" : "R",
+                STATE_WR_N() ? "" : "W");
+        m_debug_output(buf);
+#ifdef ADAFRUIT_GRAND_CENTRAL_M4
+        uint32_t dataa = PORT->Group[PGA].IN.reg;
+        uint32_t datab = PORT->Group[PGB].IN.reg;
+        uint32_t datac = PORT->Group[PGC].IN.reg;
+        uint32_t datad = PORT->Group[PGD].IN.reg;
+        sprintf(buf, "IN    PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                dataa, datab, datac, datad);
+        m_debug_output(buf);
+        uint32_t outa = PORT->Group[PGA].OUT.reg;
+        uint32_t outb = PORT->Group[PGB].OUT.reg;
+        uint32_t outc = PORT->Group[PGC].OUT.reg;
+        uint32_t outd = PORT->Group[PGD].OUT.reg;
+        sprintf(buf, "OUT   PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                outa, outb, outc, outd);
+        m_debug_output(buf);
+        uint32_t dira = PORT->Group[PGA].DIR.reg;
+        uint32_t dirb = PORT->Group[PGB].DIR.reg;
+        uint32_t dirc = PORT->Group[PGC].DIR.reg;
+        uint32_t dird = PORT->Group[PGD].DIR.reg;
+        sprintf(buf, "DIR   PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                dira, dirb, dirc, dird);
+        m_debug_output(buf);
+#endif
+    }
 }
 
 /*
@@ -143,9 +185,11 @@ void Z80RetroShield::Tick()
                 DATA_OUT(m_on_memory_read(uP_ADDR));
             else
                 DATA_OUT(0);
+            debug_show_status("MEMR: ");
         }
         else if (!STATE_WR_N())
         {
+            debug_show_status("MEMW: ");
             // RAM write
             if (m_on_memory_write != NULL)
                 m_on_memory_write(uP_ADDR, DATA_IN());
@@ -169,15 +213,20 @@ void Z80RetroShield::Tick()
                 DATA_OUT(m_on_io_read(ADDR_L()));
             else
                 DATA_OUT(0);
+            debug_show_status("IOR : ");
         }
 
         // IO Write?
         if (!STATE_WR_N() && prevIORQ)
         {
+            debug_show_status("IOW : ");
             if (m_on_io_write != NULL)
                 m_on_io_write(ADDR_L(), DATA_IN());
         }
+
+        goto tick_tock;
     }
+    debug_show_status("    : ");
 
 tick_tock:
     prevIORQ = STATE_IORQ_N();
@@ -185,6 +234,7 @@ tick_tock:
     //////////////////////////////////////////////////////////////////////
     // start next cycle
     CLK_LOW();
+    debug_count_cycle();
 
     // natural delay for DATA Hold time (t_HR)
     DATA_DIR(DIR_IN);

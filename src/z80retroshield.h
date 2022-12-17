@@ -28,6 +28,7 @@
 #ifndef _Z80RetroShield_DRIVER
 #define _Z80RetroShield_DRIVER 1
 
+// #define Z80RetroShield_DEBUG
 
 /**
  * Signatures for our callback functions.
@@ -47,6 +48,7 @@ typedef char (*memoryRead)(int address);
 typedef void (*memoryWrite)(int address, char byte);
 typedef char (*ioread)(int address);
 typedef void (*iowrite)(int address, char byte);
+typedef void (*debugOutput)(const char* msg);
 
 
 
@@ -142,6 +144,12 @@ public:
         m_on_io_write = cb;
     };
 
+    void set_debug_output(debugOutput cb)
+    {
+        m_debug_output = cb;
+        m_debug = true;
+    };
+
 
 private:
 
@@ -152,9 +160,27 @@ private:
     memoryWrite m_on_memory_write;
     ioread       m_on_io_read;
     iowrite      m_on_io_write;
+    debugOutput m_debug_output;
+    bool m_debug;
+    unsigned long m_cycle;
 
+    void show_status(const char* header);
+
+#ifdef Z80RetroShield_DEBUG
+    inline void debug_show_status(const char* header) {
+        if (m_debug)
+            show_status(header);
+    };
+
+    inline void debug_count_cycle(void) {
+        if (m_debug)
+            m_cycle++;
+    };
+#else
+    inline void debug_show_status(const char* header) { };
+    inline void debug_count_cycle(void) { };
+#endif
 
 };
-
 
 #endif /* _Z80RetroShield_DRIVER */
