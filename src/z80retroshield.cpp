@@ -182,13 +182,13 @@ void Z80RetroShieldClassName::Tick(int cycles)
         // CLK goes high
         CLK_HIGH();
 
-        // Store the contents of the address-bus in case we're going to use it.
-        uP_ADDR = ADDR();
-
         //////////////////////////////////////////////////////////////////////
         // Memory Access?
         if (!STATE_MREQ_N())
             {
+                // Store the contents of the address-bus in case we're going to use it.
+                uP_ADDR = ADDR();
+
                 // RAM Read?
                 if (!STATE_RD_N())
                     {
