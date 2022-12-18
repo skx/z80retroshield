@@ -59,7 +59,7 @@ char memory_read(int address)
 //
 // RAM I/O function handler.
 //
-void memory_write(int address, byte value)
+void memory_write(int address, char value)
 {
     if (address >= 0 && address < memory_len)
         memory[address] = value;
