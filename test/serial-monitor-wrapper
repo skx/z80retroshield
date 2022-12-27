@@ -1,0 +1,27 @@
+#!/bin/bash
+
+send_return_code=$(printf '\r')
+
+while (( $# > 0 )); do
+    case "$1" in
+    --send-cr)
+        send_return_code=$(printf '\r')
+        shift
+        echo $0: send CR
+        ;;
+    --send-lf)
+        send_return_code=$(printf '\n')
+        shift
+        echo $0: send LF
+        ;;
+    -*)
+        echo unknown option "'"$1"'"
+        exit 1
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+sed -u -e "s/$/$send_return_code/g" | $*
