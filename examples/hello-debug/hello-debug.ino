@@ -8,13 +8,14 @@
 //
 
 //
-// You can see how it runs with additional debug message if you un-comment the line below in the
-// z80retroshield.h header file in your library folder.
-//
-// "#define Z80RetroShield_DEBUG" 
+// You can see how it runs with additional debug message by following steps below,
+// 1. Use Z80RetroShieldDebug instance instead of z80retroshield
+// 2. Set debug_output callback
+// 3. Set some debug flags by calling enable_debug()
 // 
 
 #include <z80retroshield.h>
+#include <z80retroshieldDebug.h>
 
 //
 // Our program, as hex.
@@ -33,7 +34,7 @@ int memory_len = sizeof(memory) / sizeof(memory[0]);
 //
 // Our helper
 //
-Z80RetroShield cpu;
+Z80RetroShieldDebug cpu;
 
 //
 // RAM I/O function handler.
@@ -69,6 +70,7 @@ void setup()
 {
     Serial.begin(115200);
     while (!Serial);
+    delay(1000);
 
     //
     // Setup callbacks.
@@ -122,8 +124,7 @@ void loop()
     //
     // We stop running after running a specific number of cycles
     //
-    if (cycles > 4096)
-    //if (cycles > 64)
+    if (cycles > 200)
     {
         Serial.print("Z80 processor stopped ");
         Serial.print(cycles);

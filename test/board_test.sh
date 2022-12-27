@@ -67,6 +67,17 @@ run_tests() {
        expect -re "Hello, world! .*100.*\r"
     '
 
+    test "Hello Debug" $examples/hello-debug '
+       expect "Z80 configured; launching program.\r"
+       expect "IOW : *\[0-9\]* addr=4801 data=0048 ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6501 data=0065 ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6c01 data=006c ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6c01 data=006c ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6f01 data=006f ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=0a01 data=000a ~MREQ=H ~IOREQ=L  RW="
+       expect -re "Z80 processor stopped \[0-9\]* cycles executed.\r"
+    '
+
     test "Speed test" $examples/speed_test '
        expect "Z80 configured to run endless stream of NOPs.\r"
        for {set i 1} {$i <= 10} {incr i 1} {
