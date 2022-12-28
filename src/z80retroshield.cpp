@@ -76,7 +76,7 @@ Z80RetroShieldClassName::Z80RetroShieldClassName()
     m_on_io_read = NULL;
     m_on_io_write = NULL;
     m_debug_output = NULL;
-    m_debug = false;
+    m_debug = 0;
     m_cycle = 0;
 
     //
@@ -109,19 +109,31 @@ Z80RetroShieldClassName::~Z80RetroShieldClassName()
 {
 }
 
-void Z80RetroShieldClassName::show_status(const char* header) {
-    if (m_debug_output) {
-        char buf[100];
-        sprintf(buf, "%s%4ld addr=%04x data=%04x ~MREQ=%s ~IOREQ=%s  RW=%s",
+void Z80RetroShieldClassName::show_status(const char* header)
+{
+    if (m_debug_output == nullptr) {
+        return;
+    }
+    char buf[100];
+    uint8_t mreq_n = STATE_MREQ_N();
+    uint8_t iorq_n = STATE_IORQ_N();
+    if ((m_debug & DEBUG_FLAG_CYCLE) ||
+        (m_debug & DEBUG_FLAG_IO) && iorq_n == 0 ||
+        (m_debug & DEBUG_FLAG_MEM) && mreq_n == 0) {
+        sprintf(buf, "%s%4ld addr=%04x data=%02x ~MREQ=%s ~IOREQ=%s  RW=%s",
                 header,
                 m_cycle,
                 ADDR(),
                 DATA_IN(),
-                STATE_MREQ_N() ? "H" : "L",
-                STATE_IORQ_N() ? "H" : "L",
+                mreq_n ? "H" : "L",
+                iorq_n ? "H" : "L",
                 STATE_RD_N() ? "" : "R",
                 STATE_WR_N() ? "" : "W");
         m_debug_output(buf);
+    } else {
+        return;
+    }
+    if (m_debug & DEBUG_FLAG_VERBOSE) {
 #ifdef ADAFRUIT_GRAND_CENTRAL_M4
         uint32_t dataa = PORT->Group[PGA].IN.reg;
         uint32_t datab = PORT->Group[PGB].IN.reg;
@@ -144,7 +156,7 @@ void Z80RetroShieldClassName::show_status(const char* header) {
         sprintf(buf, "DIR   PA: %08X  PB: %08X  PC: %08X  PD: %08X",
                 dira, dirb, dirc, dird);
         m_debug_output(buf);
-#endif
+#endif  // ADAFRUIT_GRAND_CENTRAL_M4
     }
 }
 

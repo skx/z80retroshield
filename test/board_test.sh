@@ -69,12 +69,11 @@ run_tests() {
 
     test "Hello Debug" $examples/hello-debug '
        expect "Z80 configured; launching program.\r"
-       expect "IOW : *\[0-9\]* addr=4801 data=0048 ~MREQ=H ~IOREQ=L  RW="
-       expect "IOW : *\[0-9\]* addr=6501 data=0065 ~MREQ=H ~IOREQ=L  RW="
-       expect "IOW : *\[0-9\]* addr=6c01 data=006c ~MREQ=H ~IOREQ=L  RW="
-       expect "IOW : *\[0-9\]* addr=6c01 data=006c ~MREQ=H ~IOREQ=L  RW="
-       expect "IOW : *\[0-9\]* addr=6f01 data=006f ~MREQ=H ~IOREQ=L  RW="
-       expect "IOW : *\[0-9\]* addr=0a01 data=000a ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=4801 data=48 ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6501 data=65 ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6c01 data=6c ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=6f01 data=6f ~MREQ=H ~IOREQ=L  RW="
+       expect "IOW : *\[0-9\]* addr=0a01 data=0a ~MREQ=H ~IOREQ=L  RW="
        expect -re "Z80 processor stopped \[0-9\]* cycles executed.\r"
     '
 

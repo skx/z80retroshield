@@ -50,8 +50,11 @@ char memory_read(int address)
 //
 void io_write(int address, char byte)
 {
-    if (address == 1)
+    if (address == 1) {
         Serial.write(byte);
+        // Display characters one by one because you get so many debug output
+        Serial.println();
+    }
 }
 
 
@@ -90,6 +93,8 @@ void setup()
     // Enable debug output.
     //
     cpu.set_debug_output(debug_output);
+    cpu.enable_debug(cpu.DEBUG_FLAG_IO);
+    cpu.enable_debug(cpu.DEBUG_FLAG_MEM);
 
     //
     // Configured.
@@ -124,7 +129,7 @@ void loop()
     //
     // We stop running after running a specific number of cycles
     //
-    if (cycles > 200)
+    if (cycles > 150)
     {
         Serial.print("Z80 processor stopped ");
         Serial.print(cycles);

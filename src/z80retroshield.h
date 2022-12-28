@@ -76,6 +76,14 @@ public:
     typedef void (*iowrite)(int address, char byte);
     typedef void (*debugOutput)(const char* msg);
 
+    typedef unsigned int debugFlag;
+    static const debugFlag DEBUG_FLAG_IO = (1<<0);
+    static const debugFlag DEBUG_FLAG_MEM = (1<<1);
+    static const debugFlag DEBUG_FLAG_CYCLE = (1<<2);
+    static const debugFlag DEBUG_FLAG_VERBOSE = (1<<3);
+    static const debugFlag DEBUG_FLAG_TRACE_ALL =
+        (DEBUG_FLAG_IO|DEBUG_FLAG_MEM|DEBUG_FLAG_CYCLE|DEBUG_FLAG_VERBOSE);
+
     /**
      * Constructor.
      */
@@ -150,12 +158,29 @@ public:
         m_on_io_write = cb;
     };
 
+    /**
+     * Set the callback which handles some debug messages from the libraty.
+     */
     void set_debug_output(debugOutput cb)
     {
         m_debug_output = cb;
-        m_debug = true;
     };
 
+    /**
+     * Set debug flag(s)
+     */
+    void enable_debug(debugFlag flag)
+    {
+        m_debug |= flag;
+    };
+
+    /**
+     * Clear debug flag(s)
+     */
+    void disable_debug(debugFlag flag)
+    {
+        m_debug &= ~flag;
+    };
 
 private:
 
@@ -167,7 +192,7 @@ private:
     ioread       m_on_io_read;
     iowrite      m_on_io_write;
     debugOutput m_debug_output;
-    bool m_debug;
+    debugFlag m_debug;
     unsigned long m_cycle;
 
     void show_status(const char* header);
