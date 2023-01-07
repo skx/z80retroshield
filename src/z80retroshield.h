@@ -25,31 +25,19 @@
 
 
 
-#ifndef _Z80RetroShield_DRIVER
+#if not defined(Z80RetroShield_DEBUG) && not defined(_Z80RetroShield_DRIVER) || \
+    defined(Z80RetroShield_DEBUG) && not defined(_Z80RetroShieldDebug_DRIVER)
+
+#ifdef Z80RetroShieldClassName
+#undef Z80RetroShieldClassName
+#endif
+#ifdef  Z80RetroShield_DEBUG
+#define Z80RetroShieldClassName Z80RetroShieldDebug
+#define _Z80RetroShieldDebug_DRIVER 1
+#else
+#define Z80RetroShieldClassName Z80RetroShield
 #define _Z80RetroShield_DRIVER 1
-
-
-/**
- * Signatures for our callback functions.
- *
- * There are two callbacks for memory, and two for port-based I/O.
- *
- * You must provide the memory-read callback, otherwise the processor
- * will not be able to fetch instructions to execute, however the rest
- * are optional.
- *
- * It is suggested you allow writing to memory at least though, because
- * without the ability to write to memory things like the `call` instruction
- * will be broken - i.e. If you set the stack-pointer to 0x100 and a call
- * is made the return address will be pushed into that memory..
- */
-typedef char (*memoryRead)(int address);
-typedef void (*memoryWrite)(int address, char byte);
-typedef char (*ioread)(int address);
-typedef void (*iowrite)(int address, char byte);
-
-
-
+#endif
 
 /**
  *
@@ -63,20 +51,48 @@ typedef void (*iowrite)(int address, char byte);
  * another pair of callbacks for handling port-based I/O.
  *
  */
-class Z80RetroShield
+class Z80RetroShieldClassName
 {
 
 public:
 
     /**
+     * Signatures for our callback functions.
+     *
+     * There are two callbacks for memory, and two for port-based I/O.
+     *
+     * You must provide the memory-read callback, otherwise the processor
+     * will not be able to fetch instructions to execute, however the rest
+     * are optional.
+     *
+     * It is suggested you allow writing to memory at least though, because
+     * without the ability to write to memory things like the `call` instruction
+     * will be broken - i.e. If you set the stack-pointer to 0x100 and a call
+     * is made the return address will be pushed into that memory..
+     */
+    typedef char (*memoryRead)(int address);
+    typedef void (*memoryWrite)(int address, char byte);
+    typedef char (*ioread)(int address);
+    typedef void (*iowrite)(int address, char byte);
+    typedef void (*debugOutput)(const char* msg);
+
+    typedef unsigned int debugFlag;
+    static const debugFlag DEBUG_FLAG_IO = (1<<0);
+    static const debugFlag DEBUG_FLAG_MEM = (1<<1);
+    static const debugFlag DEBUG_FLAG_CYCLE = (1<<2);
+    static const debugFlag DEBUG_FLAG_VERBOSE = (1<<3);
+    static const debugFlag DEBUG_FLAG_TRACE_ALL =
+        (DEBUG_FLAG_IO|DEBUG_FLAG_MEM|DEBUG_FLAG_CYCLE|DEBUG_FLAG_VERBOSE);
+
+    /**
      * Constructor.
      */
-    Z80RetroShield();
+    Z80RetroShieldClassName();
 
     /**
      * Destructor.
      */
-    ~Z80RetroShield();
+    ~Z80RetroShieldClassName();
 
     /**
      * Reset the processor.
@@ -86,9 +102,9 @@ public:
     void Reset();
 
     /**
-     * Run a single cycle.
+     * Run specified cycles.
      */
-    void Tick();
+    void Tick(int cycles = 1);
 
     /**
      * Set the callback to be invoked when memory is to be read.
@@ -142,6 +158,29 @@ public:
         m_on_io_write = cb;
     };
 
+    /**
+     * Set the callback which handles some debug messages from the libraty.
+     */
+    void set_debug_output(debugOutput cb)
+    {
+        m_debug_output = cb;
+    };
+
+    /**
+     * Set debug flag(s)
+     */
+    void enable_debug(debugFlag flag)
+    {
+        m_debug |= flag;
+    };
+
+    /**
+     * Clear debug flag(s)
+     */
+    void disable_debug(debugFlag flag)
+    {
+        m_debug &= ~flag;
+    };
 
 private:
 
@@ -152,9 +191,27 @@ private:
     memoryWrite m_on_memory_write;
     ioread       m_on_io_read;
     iowrite      m_on_io_write;
+    debugOutput m_debug_output;
+    debugFlag m_debug;
+    unsigned long m_cycle;
 
+    void show_status(const char* header);
+
+#ifdef Z80RetroShield_DEBUG
+    inline void debug_show_status(const char* header) {
+        if (m_debug)
+            show_status(header);
+    };
+
+    inline void debug_count_cycle(void) {
+        if (m_debug)
+            m_cycle++;
+    };
+#else
+    inline void debug_show_status(const char* header) { };
+    inline void debug_count_cycle(void) { };
+#endif
 
 };
-
 
 #endif /* _Z80RetroShield_DRIVER */

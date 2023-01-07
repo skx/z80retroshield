@@ -1,0 +1,23 @@
+board_manager:
+  additional_urls:
+  - https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+daemon:
+  port: "50051"
+directories:
+  data: download/Arduino15
+  downloads: download/Arduino15/staging
+  user: download/Arduino15
+ide:
+  bundled: false
+  portable: false
+library:
+  enable_unsafe_install: false
+logging:
+  file: ""
+  format: text
+  level: info
+metrics:
+  addr: :9090
+  enabled: true
+sketch:
+  always_export_binaries: false

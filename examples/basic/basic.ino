@@ -554,7 +554,7 @@ char memory_read(int address)
 //
 // TODO: Proper bounds-checking.
 //
-void memory_write(int address, byte value)
+void memory_write(int address, char value)
 {
     int a = address - RAM_START;
 

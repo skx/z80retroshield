@@ -67,7 +67,7 @@ void io_write(int address, char byte)
         return;
     }
 
-    return 0;
+    return;
 }
 
 

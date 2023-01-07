@@ -23,53 +23,50 @@
 // SOFTWARE.
 
 
-#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <Arduino.h>
 #include <z80retroshield.h>
 
-#ifndef byte
-# define byte char
-#endif
+#include <avr/pgmspace.h>
 
 /* Digital Pin Assignments */
-#define DATA_OUT (PORTL)
-#define DATA_IN  (PINL)
-#define ADDR_H   (PINC)
-#define ADDR_L   (PINA)
-#define ADDR     ((unsigned int) (ADDR_H << 8 | ADDR_L))
+static inline void DATA_OUT(uint8_t data) { (PORTL) = data; }
+static inline uint8_t DATA_IN(void) { return (PINL); }
+static inline uint8_t ADDR_H(void)  { return (PINC); }
+static inline uint8_t ADDR_L(void)  { return (PINA); }
+static inline unsigned int ADDR(void) { return ((unsigned int) (ADDR_H() << 8 | ADDR_L())); }
 
-#define uP_RESET_N  38
-#define uP_MREQ_N   41
-#define uP_IORQ_N   39
-#define uP_RD_N     53
-#define uP_WR_N     40
-#define uP_NMI_N    51
-#define uP_INT_N    50
-#define uP_CLK      52
+static const uint8_t uP_RESET_N = 38;
+static const uint8_t uP_MREQ_N  = 41;
+static const uint8_t uP_IORQ_N  = 39;
+static const uint8_t uP_RD_N    = 53;
+static const uint8_t uP_WR_N    = 40;
+static const uint8_t uP_NMI_N   = 51;
+static const uint8_t uP_INT_N   = 50;
+static const uint8_t uP_CLK     = 52;
 
 //
 // Fast routines to drive clock signals high/low; faster than digitalWrite
 // required to meet >100kHz clock
 //
-#define CLK_HIGH      (PORTB = PORTB | 0x02)
-#define CLK_LOW       (PORTB = PORTB & 0xFC)
-#define STATE_RD_N    (PINB & 0x01)
-#define STATE_WR_N    (PING & 0x02)
-#define STATE_MREQ_N  (PING & 0x01)
-#define STATE_IORQ_N  (PING & 0x04)
+static inline void CLK_HIGH(void) { PORTB = PORTB | 0x02; }
+static inline void CLK_LOW(void) { PORTB = PORTB & 0xFC; }
+static inline uint8_t STATE_RD_N(void) { return (PINB & 0x01); }
+static inline uint8_t STATE_WR_N(void) { return (PING & 0x02); }
+static inline uint8_t STATE_MREQ_N(void) { return (PING & 0x01); }
+static inline uint8_t STATE_IORQ_N(void) { return (PING & 0x04); }
 
-#define DIR_IN  0x00
-#define DIR_OUT 0xFF
-#define DATA_DIR   DDRL
-#define ADDR_H_DIR DDRC
-#define ADDR_L_DIR DDRA
+static const uint8_t DIR_IN = 0x00;
+static const uint8_t DIR_OUT = 0xFF;
+static inline void DATA_DIR(uint8_t dir) { DDRL = dir; }
+static inline void ADDR_H_DIR(uint8_t dir) { DDRC = dir; }
+static inline void ADDR_L_DIR(uint8_t dir) { DDRA = dir; }
 
 
 /*
  * Constructor
  */
-Z80RetroShield::Z80RetroShield()
+Z80RetroShieldClassName::Z80RetroShieldClassName()
 {
     //
     // Callbacks are all empty by default.
@@ -78,13 +75,16 @@ Z80RetroShield::Z80RetroShield()
     m_on_memory_write = NULL;
     m_on_io_read = NULL;
     m_on_io_write = NULL;
+    m_debug_output = NULL;
+    m_debug = 0;
+    m_cycle = 0;
 
     //
     // Set directions
     //
-    DATA_DIR = DIR_IN;
-    ADDR_H_DIR = DIR_IN;
-    ADDR_L_DIR = DIR_IN;
+    DATA_DIR(DIR_IN);
+    ADDR_H_DIR(DIR_IN);
+    ADDR_L_DIR(DIR_IN);
 
     //
     // Handle other pins.
@@ -105,8 +105,59 @@ Z80RetroShield::Z80RetroShield()
 /*
  * Destructor
  */
-Z80RetroShield::~Z80RetroShield()
+Z80RetroShieldClassName::~Z80RetroShieldClassName()
 {
+}
+
+void Z80RetroShieldClassName::show_status(const char* header)
+{
+    if (m_debug_output == nullptr) {
+        return;
+    }
+    char buf[100];
+    uint8_t mreq_n = STATE_MREQ_N();
+    uint8_t iorq_n = STATE_IORQ_N();
+    if ((m_debug & DEBUG_FLAG_CYCLE) ||
+        (m_debug & DEBUG_FLAG_IO) && iorq_n == 0 ||
+        (m_debug & DEBUG_FLAG_MEM) && mreq_n == 0) {
+        sprintf(buf, "%s%4ld addr=%04x data=%02x ~MREQ=%s ~IOREQ=%s  RW=%s",
+                header,
+                m_cycle,
+                ADDR(),
+                DATA_IN(),
+                mreq_n ? "H" : "L",
+                iorq_n ? "H" : "L",
+                STATE_RD_N() ? "" : "R",
+                STATE_WR_N() ? "" : "W");
+        m_debug_output(buf);
+    } else {
+        return;
+    }
+    if (m_debug & DEBUG_FLAG_VERBOSE) {
+#ifdef ADAFRUIT_GRAND_CENTRAL_M4
+        uint32_t dataa = PORT->Group[PGA].IN.reg;
+        uint32_t datab = PORT->Group[PGB].IN.reg;
+        uint32_t datac = PORT->Group[PGC].IN.reg;
+        uint32_t datad = PORT->Group[PGD].IN.reg;
+        sprintf(buf, "IN    PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                dataa, datab, datac, datad);
+        m_debug_output(buf);
+        uint32_t outa = PORT->Group[PGA].OUT.reg;
+        uint32_t outb = PORT->Group[PGB].OUT.reg;
+        uint32_t outc = PORT->Group[PGC].OUT.reg;
+        uint32_t outd = PORT->Group[PGD].OUT.reg;
+        sprintf(buf, "OUT   PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                outa, outb, outc, outd);
+        m_debug_output(buf);
+        uint32_t dira = PORT->Group[PGA].DIR.reg;
+        uint32_t dirb = PORT->Group[PGB].DIR.reg;
+        uint32_t dirc = PORT->Group[PGC].DIR.reg;
+        uint32_t dird = PORT->Group[PGD].DIR.reg;
+        sprintf(buf, "DIR   PA: %08X  PB: %08X  PC: %08X  PD: %08X",
+                dira, dirb, dirc, dird);
+        m_debug_output(buf);
+#endif  // ADAFRUIT_GRAND_CENTRAL_M4
+    }
 }
 
 /*
@@ -114,83 +165,95 @@ Z80RetroShield::~Z80RetroShield()
  *
  * This will step the processor by a single clock-tick.
  */
-void Z80RetroShield::Tick()
+void Z80RetroShieldClassName::Tick(int cycles)
 {
-    /*
-     * The memory address we're reading/writing to.
-     */
-    static unsigned int  uP_ADDR = 0;
+    for (int cycle = 0; cycle < cycles; cycle++) {
 
-    /*
-     * The I/O address we're reading/writing to.
-     */
-    static byte prevIORQ = 0;
+        /*
+         * The memory address we're reading/writing to.
+         */
+        static unsigned int  uP_ADDR = 0;
 
-    // CLK goes high
-    CLK_HIGH;
+        /*
+         * The I/O address we're reading/writing to.
+         */
+        static uint8_t prevIORQ = 0;
 
-    // Store the contents of the address-bus in case we're going to use it.
-    uP_ADDR = ADDR;
+        // CLK goes high
+        CLK_HIGH();
 
-    //////////////////////////////////////////////////////////////////////
-    // Memory Access?
-    if (!STATE_MREQ_N)
-    {
-        // RAM Read?
-        if (!STATE_RD_N)
-        {
-            // change DATA port to output to uP:
-            DATA_DIR = DIR_OUT;
+        //////////////////////////////////////////////////////////////////////
+        // Memory Access?
+        if (!STATE_MREQ_N())
+            {
+                // Store the contents of the address-bus in case we're going to use it.
+                uP_ADDR = ADDR();
 
-            if (m_on_memory_read)
-                DATA_OUT = m_on_memory_read(uP_ADDR);
-            else
-                DATA_OUT = 0;
-        }
-        else if (!STATE_WR_N)
-        {
-            // RAM write
-            if (m_on_memory_write != NULL)
-                m_on_memory_write(uP_ADDR, DATA_IN);
-        }
+                // RAM Read?
+                if (!STATE_RD_N())
+                    {
+                        // change DATA port to output to uP:
+                        DATA_DIR(DIR_OUT);
 
-        goto tick_tock;
-    }
+                        if (m_on_memory_read)
+                            DATA_OUT(m_on_memory_read(uP_ADDR));
+                        else
+                            DATA_OUT(0);
+                        debug_show_status("MEMR: ");
+                    }
+                else if (!STATE_WR_N())
+                    {
+                        debug_show_status("MEMW: ");
+                        // RAM write
+                        if (m_on_memory_write != NULL)
+                            m_on_memory_write(uP_ADDR, DATA_IN());
+                    }
 
-    //////////////////////////////////////////////////////////////////////
-    // IO Access?
-    if (!STATE_IORQ_N)
-    {
-        // IO Read?
-        if (!STATE_RD_N && prevIORQ)
-        {
-            // change DATA port to output to uP:
-            DATA_DIR = DIR_OUT;
+                goto tick_tock;
+            }
 
-            // output data at this cycle too
-            if (m_on_io_read)
-                DATA_OUT = m_on_io_read(ADDR_L);
-            else
-                DATA_OUT = 0;
-        }
+        //////////////////////////////////////////////////////////////////////
+        // IO Access?
+        if (!STATE_IORQ_N())
+            {
+                // IO Read?
+                if (!STATE_RD_N() && prevIORQ)
+                    {
+                        // change DATA port to output to uP:
+                        DATA_DIR(DIR_OUT);
 
-        // IO Write?
-        if (!STATE_WR_N && prevIORQ)
-        {
-            if (m_on_io_write != NULL)
-                m_on_io_write(ADDR_L, DATA_IN);
-        }
-    }
+                        // output data at this cycle too
+                        if (m_on_io_read)
+                            DATA_OUT(m_on_io_read(ADDR_L()));
+                        else
+                            DATA_OUT(0);
+                        debug_show_status("IOR : ");
+                    }
 
-tick_tock:
-    prevIORQ = STATE_IORQ_N;
+                // IO Write?
+                if (!STATE_WR_N() && prevIORQ)
+                    {
+                        debug_show_status("IOW : ");
+                        if (m_on_io_write != NULL)
+                            m_on_io_write(ADDR_L(), DATA_IN());
+                    }
 
-    //////////////////////////////////////////////////////////////////////
-    // start next cycle
-    CLK_LOW;
+                goto tick_tock;
+            }
+        debug_show_status("    : ");
 
-    // natural delay for DATA Hold time (t_HR)
-    DATA_DIR = DIR_IN;
+    tick_tock:
+        prevIORQ = STATE_IORQ_N();
+
+        //////////////////////////////////////////////////////////////////////
+        // start next cycle
+        CLK_LOW();
+        debug_count_cycle();
+
+        // natural delay for DATA Hold time (t_HR)
+        DATA_DIR(DIR_IN);
+
+    }  // for (int cycle = 0; cycle < cycles; cycle++)
 
 }
 
@@ -200,7 +263,7 @@ tick_tock:
  * This will run the clock a few cycles to ensure that the processor
  * is reset fully.
  */
-void Z80RetroShield::Reset()
+void Z80RetroShieldClassName::Reset()
 {
     // Drive RESET conditions
     digitalWrite(uP_RESET_N, LOW);
